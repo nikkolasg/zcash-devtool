@@ -17,6 +17,7 @@ mod data;
 mod error;
 mod helpers;
 mod remote;
+mod simplex;
 mod socks;
 mod ui;
 

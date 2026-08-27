@@ -31,6 +31,9 @@ serde = "1.0"
 time = "0.3"
 tokio = { version = "1.21.0", features = ["fs", "io-std", "macros", "rt-multi-thread", "signal"] }
 tokio-socks = "0.5"
+# 0.28+ pulls in `sha1 0.11` (stable `digest 0.11`), which conflicts with the
+# `digest 0.11.0-pre` pre-release pinned via `bip32`; 0.27 still uses sha1 0.10.
+tokio-tungstenite = "0.27"
 toml = "0.8"
 tonic = { version = "0.14", features = ["gzip", "tls-webpki-roots"] }
 tower = { version = "0.5", features = ["util"] }
