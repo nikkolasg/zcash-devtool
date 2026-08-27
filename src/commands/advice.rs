@@ -15,12 +15,15 @@ use crate::simplex::SimplexClient;
 
 pub(crate) mod identity;
 pub(crate) mod pair;
+pub(crate) mod send;
 pub(crate) mod store;
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
     /// Pair with a peer over a SimpleX messaging channel
     Pair(pair::Command),
+    /// Send out-of-band payment advice for a mined transaction
+    Send(send::Command),
 }
 
 /// The out-of-band advice message exchanged over SimpleX. `sig` is an

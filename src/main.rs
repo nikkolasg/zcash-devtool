@@ -234,6 +234,7 @@ fn main() -> Result<(), anyhow::Error> {
                 command,
             }) => match command {
                 commands::advice::Command::Pair(command) => command.run(wallet_dir).await,
+                commands::advice::Command::Send(command) => command.run(wallet_dir).await,
             },
             #[cfg(feature = "pczt-qr")]
             Command::Keystone(commands::Keystone {
