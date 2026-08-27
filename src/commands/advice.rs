@@ -17,6 +17,8 @@ pub(crate) mod flush;
 pub(crate) mod identity;
 pub(crate) mod pair;
 pub(crate) mod receive;
+pub(crate) mod recover;
+pub(crate) mod redeliver;
 pub(crate) mod send;
 pub(crate) mod store;
 pub(crate) mod verify;
@@ -31,6 +33,10 @@ pub(crate) enum Command {
     Flush(flush::Command),
     /// Wait for payment advice and run one targeted trial decryption
     Receive(receive::Command),
+    /// Re-deliver stored advices to a peer that recovered from its seed
+    Redeliver(redeliver::Command),
+    /// Recover advices on a wallet restored from its seed phrase
+    Recover(recover::Command),
 }
 
 /// The out-of-band advice message exchanged over SimpleX. `sig` is an

@@ -237,6 +237,8 @@ fn main() -> Result<(), anyhow::Error> {
                 commands::advice::Command::Send(command) => command.run(wallet_dir).await,
                 commands::advice::Command::Flush(command) => command.run(wallet_dir).await,
                 commands::advice::Command::Receive(command) => command.run(wallet_dir).await,
+                commands::advice::Command::Redeliver(command) => command.run(wallet_dir).await,
+                commands::advice::Command::Recover(command) => command.run(wallet_dir).await,
             },
             #[cfg(feature = "pczt-qr")]
             Command::Keystone(commands::Keystone {
