@@ -35,6 +35,16 @@ pub(crate) struct Zip48 {
 }
 
 #[derive(Debug, Args)]
+pub(crate) struct Advice {
+    /// Path to the wallet directory
+    #[arg(short, long)]
+    pub(crate) wallet_dir: Option<String>,
+
+    #[command(subcommand)]
+    pub(crate) command: advice::Command,
+}
+
+#[derive(Debug, Args)]
 pub(crate) struct Pczt {
     /// Path to a wallet directory
     #[arg(short, long)]

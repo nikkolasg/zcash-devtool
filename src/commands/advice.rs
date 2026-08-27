@@ -2,6 +2,7 @@ use std::path::Path;
 use std::time::Instant;
 
 use anyhow::anyhow;
+use clap::Subcommand;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
 use zcash_client_backend::data_api::{Account, WalletWrite};
@@ -13,7 +14,14 @@ use zcash_protocol::consensus::Parameters;
 use crate::simplex::SimplexClient;
 
 pub(crate) mod identity;
+pub(crate) mod pair;
 pub(crate) mod store;
+
+#[derive(Debug, Subcommand)]
+pub(crate) enum Command {
+    /// Pair with a peer over a SimpleX messaging channel
+    Pair(pair::Command),
+}
 
 /// The out-of-band advice message exchanged over SimpleX. `sig` is an
 /// optional Ed25519 signature by the sender's identity subkey over
