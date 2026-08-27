@@ -15,8 +15,10 @@ use crate::simplex::SimplexClient;
 
 pub(crate) mod identity;
 pub(crate) mod pair;
+pub(crate) mod receive;
 pub(crate) mod send;
 pub(crate) mod store;
+pub(crate) mod verify;
 
 #[derive(Debug, Subcommand)]
 pub(crate) enum Command {
@@ -24,6 +26,8 @@ pub(crate) enum Command {
     Pair(pair::Command),
     /// Send out-of-band payment advice for a mined transaction
     Send(send::Command),
+    /// Wait for payment advice and run one targeted trial decryption
+    Receive(receive::Command),
 }
 
 /// The out-of-band advice message exchanged over SimpleX. `sig` is an
