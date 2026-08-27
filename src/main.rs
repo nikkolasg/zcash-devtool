@@ -235,6 +235,7 @@ fn main() -> Result<(), anyhow::Error> {
             }) => match command {
                 commands::advice::Command::Pair(command) => command.run(wallet_dir).await,
                 commands::advice::Command::Send(command) => command.run(wallet_dir).await,
+                commands::advice::Command::Flush(command) => command.run(wallet_dir).await,
                 commands::advice::Command::Receive(command) => command.run(wallet_dir).await,
             },
             #[cfg(feature = "pczt-qr")]

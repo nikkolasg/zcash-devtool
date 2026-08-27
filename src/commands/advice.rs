@@ -13,6 +13,7 @@ use zcash_protocol::consensus::Parameters;
 
 use crate::simplex::SimplexClient;
 
+pub(crate) mod flush;
 pub(crate) mod identity;
 pub(crate) mod pair;
 pub(crate) mod receive;
@@ -26,6 +27,8 @@ pub(crate) enum Command {
     Pair(pair::Command),
     /// Send out-of-band payment advice for a mined transaction
     Send(send::Command),
+    /// Re-send pending advice, surface overdue entries, and collect late acks
+    Flush(flush::Command),
     /// Wait for payment advice and run one targeted trial decryption
     Receive(receive::Command),
 }
