@@ -17,7 +17,13 @@ pub(crate) mod flush;
 pub(crate) mod identity;
 pub(crate) mod pair;
 pub(crate) mod receive;
+// Recovery (spec 1.3.7) is gated behind `unstable-recovery` and OFF by
+// default: honest seed-only recovery needs the per-contact identity index
+// restored by the future Step 3 encrypted backup. See [features] in
+// Cargo.toml for the full rationale.
+#[cfg(feature = "unstable-recovery")]
 pub(crate) mod recover;
+#[cfg(feature = "unstable-recovery")]
 pub(crate) mod redeliver;
 pub(crate) mod send;
 pub(crate) mod store;
@@ -34,8 +40,10 @@ pub(crate) enum Command {
     /// Wait for payment advice and run one targeted trial decryption
     Receive(receive::Command),
     /// Re-deliver stored advices to a peer that recovered from its seed
+    #[cfg(feature = "unstable-recovery")]
     Redeliver(redeliver::Command),
     /// Recover advices on a wallet restored from its seed phrase
+    #[cfg(feature = "unstable-recovery")]
     Recover(recover::Command),
 }
 
@@ -97,6 +105,7 @@ pub(crate) struct AckMessage {
 
 /// Challenge sent by the advice sender over a fresh channel to a wallet
 /// claiming to be a recovered peer.
+#[cfg(any(test, feature = "unstable-recovery"))]
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct RecoveryChallengeMessage {
     pub(crate) v: u32,
@@ -107,6 +116,7 @@ pub(crate) struct RecoveryChallengeMessage {
 
 /// The recovered wallet's answer: a signature over the challenge nonce with
 /// the identity subkey the sender has held since first pairing.
+#[cfg(any(test, feature = "unstable-recovery"))]
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct RecoveryProofMessage {
     pub(crate) v: u32,
@@ -118,6 +128,7 @@ pub(crate) struct RecoveryProofMessage {
 }
 
 /// Marks the end of a re-delivery batch.
+#[cfg(any(test, feature = "unstable-recovery"))]
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct RedeliveryDoneMessage {
     pub(crate) v: u32,
@@ -130,6 +141,7 @@ pub(crate) struct RedeliveryDoneMessage {
 /// SimpleX message costs a full client/relay round-trip (~0.2s on the
 /// reference stack), so re-delivery ships many envelopes per message instead
 /// of one; entries are validated individually on receipt.
+#[cfg(any(test, feature = "unstable-recovery"))]
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct AdviceBatchMessage {
     pub(crate) v: u32,
@@ -185,6 +197,7 @@ pub(crate) fn validate_ack(text: &str) -> Result<AckMessage, String> {
     Ok(msg)
 }
 
+#[cfg(any(test, feature = "unstable-recovery"))]
 pub(crate) fn validate_recovery_challenge(text: &str) -> Result<RecoveryChallengeMessage, String> {
     let msg: RecoveryChallengeMessage =
         serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
@@ -194,6 +207,7 @@ pub(crate) fn validate_recovery_challenge(text: &str) -> Result<RecoveryChalleng
     Ok(msg)
 }
 
+#[cfg(any(test, feature = "unstable-recovery"))]
 pub(crate) fn validate_recovery_proof(text: &str) -> Result<RecoveryProofMessage, String> {
     let msg: RecoveryProofMessage =
         serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
@@ -204,6 +218,7 @@ pub(crate) fn validate_recovery_proof(text: &str) -> Result<RecoveryProofMessage
     Ok(msg)
 }
 
+#[cfg(any(test, feature = "unstable-recovery"))]
 pub(crate) fn validate_redelivery_done(text: &str) -> Result<RedeliveryDoneMessage, String> {
     let msg: RedeliveryDoneMessage =
         serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
@@ -212,6 +227,7 @@ pub(crate) fn validate_redelivery_done(text: &str) -> Result<RedeliveryDoneMessa
     Ok(msg)
 }
 
+#[cfg(any(test, feature = "unstable-recovery"))]
 pub(crate) fn validate_advice_batch(text: &str) -> Result<AdviceBatchMessage, String> {
     let msg: AdviceBatchMessage =
         serde_json::from_str(text).map_err(|e| format!("invalid JSON: {e}"))?;
@@ -517,8 +533,9 @@ mod tests {
     use super::{
         AckMessage, AdviceEnvelope, ack_message_signing_input, ack_status_byte,
         check_ack_signature, check_envelope_signature, decode_hex_array, envelope_signing_input,
-        identity, parse_txid, pool_byte, validate_ack, validate_recovery_challenge,
-        validate_recovery_proof, validate_redelivery_done, validate_token,
+        identity, parse_txid, pool_byte, validate_ack, validate_advice_batch,
+        validate_recovery_challenge, validate_recovery_proof, validate_redelivery_done,
+        validate_token,
     };
 
     const TXID: &str = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff";
@@ -630,6 +647,15 @@ mod tests {
         assert_eq!(msg.unwrap().count, 3);
         assert!(validate_redelivery_done(r#"{"v":1,"type":"advice","count":3}"#).is_err());
         assert!(validate_redelivery_done(r#"{"v":7,"type":"redelivery_done","count":3}"#).is_err());
+    }
+
+    #[test]
+    fn validates_advice_batch_messages() {
+        let good = r#"{"v":1,"type":"advice_batch","advices":[{"a":1},{"b":2}]}"#;
+        assert_eq!(validate_advice_batch(good).unwrap().advices.len(), 2);
+        assert!(validate_advice_batch(r#"{"v":1,"type":"advice","advices":[]}"#).is_err());
+        assert!(validate_advice_batch(r#"{"v":2,"type":"advice_batch","advices":[]}"#).is_err());
+        assert!(validate_advice_batch("not json").is_err());
     }
 
     #[test]

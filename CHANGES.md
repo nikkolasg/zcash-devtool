@@ -1,5 +1,17 @@
 # CHANGES
 
+## Recovery disabled behind `unstable-recovery`
+
+`advice recover`/`redeliver` and the four recovery wire messages are compiled
+out of default builds (cargo feature `unstable-recovery`, off by default).
+With per-contact identity indices, honest seed-only recovery needs the
+index↔contact map restored by the future Step 3 encrypted backup; until then
+the flow only works when the operator supplies an index a real user would have
+lost. The code and its tests stay in the tree (validators and the recovery
+signing input remain test-compiled), so the protocol stays proven and
+re-enabling is a feature flag, not a rewrite. Payments are unaffected: the
+chain rail finds everything by normal scanning.
+
 ## Removed `advice rotate` and `advice contact`
 
 Trimmed the subcommand surface to pair/send/receive/flush/redeliver/recover.

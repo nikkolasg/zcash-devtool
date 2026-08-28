@@ -115,6 +115,15 @@ tui-logger = { version = "0.17", optional = true, features = ["tracing-support"]
 default = ["transparent-inputs"]
 qr = ["dep:qrcode"]
 regtest_support = ["zcash_protocol/local-consensus"]
+# `advice recover`/`redeliver` (seed-only history re-delivery, spec 1.3.7).
+# Disabled by default: with per-contact identity indices, a wallet restored
+# from its seed alone cannot know which subkey index each contact holds, so
+# honest seed-only recovery needs the index restored by the (future) Step 3
+# encrypted backup. Until that exists the flow only works when the operator
+# supplies the index out of band, so it is kept compiling behind this feature
+# rather than shipped as a working command. Payments are never at risk: the
+# chain rail still finds everything by normal scanning.
+unstable-recovery = []
 pczt-qr = ["dep:image", "dep:minicbor", "dep:nokhwa", "dep:qrcode", "dep:rqrr", "dep:ur"]
 transparent-inputs = [
     "zcash_client_sqlite/transparent-inputs",

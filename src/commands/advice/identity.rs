@@ -25,6 +25,7 @@ const ROOT_PERSONAL: &[u8] = b"Zcash_AxionRoot";
 const SUBKEY_PERSONAL: &[u8] = b"Zcash_AxionSubk";
 const LINK_PERSONAL: &[u8] = b"Zcash_AxionLink";
 const TOKEN_DOMAIN: &[u8] = b"axion-token-v1";
+#[cfg(any(test, feature = "unstable-recovery"))]
 const RECOVERY_DOMAIN: &[u8] = b"axion-recovery-v1";
 const ADVICE_DOMAIN: &[u8] = b"axion-advice-v1";
 const ACK_DOMAIN: &[u8] = b"axion-ack-v1";
@@ -145,7 +146,9 @@ pub(crate) fn ack_signing_input(
 }
 
 /// The domain-separated, channel-bound message a recovery proof's signature
-/// covers.
+/// covers. Gated with recovery (see the `unstable-recovery` feature); kept
+/// compiled under `test` so the domain-separation properties stay proven.
+#[cfg(any(test, feature = "unstable-recovery"))]
 pub(crate) fn recovery_signing_input(nonce: &[u8; 32], link: &[u8; 32]) -> Vec<u8> {
     let mut msg = Vec::with_capacity(RECOVERY_DOMAIN.len() + 32 + 32);
     msg.extend_from_slice(RECOVERY_DOMAIN);
